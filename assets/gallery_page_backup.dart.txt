@@ -1,0 +1,37 @@
+import 'package:flutter/material.dart';
+
+class GalleryPage extends StatelessWidget {
+  const GalleryPage({super.key});
+
+  final List<String> images = const [
+    'https://images.pexels.com/photos/792381/pexels-photo-792381.jpeg',
+    'https://images.pexels.com/photos/45201/kitty-cat-kitten-pet-45201.jpeg',
+    'https://images.pexels.com/photos/47547/squirrel-animal-cute-rodents-47547.jpeg',
+    // Tambahkan URL gambar lainnya sesuai kebutuhan
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Gallery Foto'),
+        centerTitle: true,
+      ),
+      body: GridView.builder(
+        padding: const EdgeInsets.all(10),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2, // Jumlah kolom
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+        ),
+        itemCount: images.length,
+        itemBuilder: (context, index) {
+          return Image.network(
+            images[index],
+            fit: BoxFit.cover,
+          );
+        },
+      ),
+      );
+  }
+}

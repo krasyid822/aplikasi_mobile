@@ -1,0 +1,74 @@
+import 'package:flutter/material.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+
+class VideoGalleryPage extends StatefulWidget {
+  @override
+  _VideoGalleryPageState createState() => _VideoGalleryPageState();
+}
+
+class _VideoGalleryPageState extends State<VideoGalleryPage> {
+  final List<Map<String, String>> videoList = [
+    {
+      "title": "Belajar Flutter Dasar",
+      "url": "https://www.youtube.com/watch?v=VPvVD8t02U8",
+    },
+    {
+      "title": "Membangun Aplikasi Flutter CRUD",
+      "url": "https://www.youtube.com/watch?v=1gDhl4leEzA",
+    },
+    {
+      "title": "Flutter UI Tutorial",
+      "url": "https://www.youtube.com/watch?v=ExKYjqgswJg",
+    },
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Galeri Video Flutter'),
+      ),
+      body: ListView.builder(
+        itemCount: videoList.length,
+        itemBuilder: (context, index) {
+          final video = videoList[index];
+          final videoId = YoutubePlayer.convertUrlToId(video['url']!);
+          YoutubePlayerController _controller = YoutubePlayerController(
+            initialVideoId: videoId!,
+            flags: YoutubePlayerFlags(
+              autoPlay: false,
+              mute: false,
+            ),
+          );
+
+          return Card(
+            margin: EdgeInsets.all(10),
+            elevation: 5,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              children: [
+                YoutubePlayer(
+                  controller: _controller,
+                  showVideoProgressIndicator: true,
+                  progressIndicatorColor: Colors.teal,
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                  video['title']!,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    ),
+  );
+}
+}
