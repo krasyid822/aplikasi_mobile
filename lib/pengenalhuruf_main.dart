@@ -27,13 +27,39 @@ class PengenalHurufPage extends StatefulWidget {
 class _PengenalHurufPageState extends State<PengenalHurufPage> {
   final AudioPlayer _audioPlayer = AudioPlayer();
   final List<String> _huruf = [
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-    'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+    'A',
+    'B',
+    'C',
+    'D',
+    'E',
+    'F',
+    'G',
+    'H',
+    'I',
+    'J',
+    'K',
+    'L',
+    'M',
+    'N',
+    'O',
+    'P',
+    'Q',
+    'R',
+    'S',
+    'T',
+    'U',
+    'V',
+    'W',
+    'X',
+    'Y',
+    'Z',
   ];
 
   Future<void> _playSound(String huruf) async {
     try {
-      await _audioPlayer.play(AssetSource('audio/huruf/${huruf.toLowerCase()}.wav'));
+      await _audioPlayer.play(
+        AssetSource('audio/huruf/${huruf.toLowerCase()}.wav'),
+      );
     } catch (e) {
       print('Error playing sound: $e');
     }
