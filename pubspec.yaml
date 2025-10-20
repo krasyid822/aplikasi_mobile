@@ -47,7 +47,7 @@ dependencies:
   
   # Package untuk YouTube Data API
   http: ^1.1.0
-  googleapis: ^13.1.0
+  googleapis: ^15.0.0
   
   # Package untuk membuka URL di web
   url_launcher: ^6.2.5
