@@ -6,6 +6,7 @@ import 'multipages_main.dart';
 import 'gallery_main.dart';
 import 'video_gallery_main.dart';
 import 'pengenalhuruf_main.dart';
+import 'pages_main.dart';
 
 void main() {
   runApp(const LandingApp());
@@ -313,6 +314,43 @@ class LandingPage extends StatelessWidget {
                         ),
                         TextSpan(
                           text: 'PENGENAL HURUF',
+                          style: TextStyle(fontSize: 18, color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: 22),
+
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => WebViewApp()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 117, 150, 0),
+                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: RichText(
+                    text: TextSpan(
+                      children: [
+                        WidgetSpan(
+                          child: Padding(
+                            padding: EdgeInsets.only(left: 8.0, right: 8.0),
+                            child: Icon(
+                              Icons.web,
+                              color: const Color.fromARGB(255, 255, 255, 255),
+                            ),
+                          ),
+                        ),
+                        TextSpan(
+                          text: 'WEBVIEW MULTI PAGE',
                           style: TextStyle(fontSize: 18, color: Colors.white),
                         ),
                       ],

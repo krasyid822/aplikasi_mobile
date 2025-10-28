@@ -51,6 +51,11 @@ dependencies:
   
   # Package untuk membuka URL di web
   url_launcher: ^6.2.5
+
+  # Package untuk menampilkan web
+  webview_flutter: ^4.13.0
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
