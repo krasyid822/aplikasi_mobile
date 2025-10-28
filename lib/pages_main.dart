@@ -66,7 +66,9 @@ class _MyHomePageState extends State<MyHomePage> {
           },
         ),
       ),
-      body: Center(child: _isDrawerOpen ? Container() : _widgetOptions[_selectedIndex]),
+      body: Center(
+        child: _isDrawerOpen ? Container() : _widgetOptions[_selectedIndex],
+      ),
       onDrawerChanged: (isOpened) {
         setState(() {
           _isDrawerOpen = isOpened;
