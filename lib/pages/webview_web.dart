@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'dart:ui_web' as ui_web;
 import 'dart:html';
@@ -22,8 +21,6 @@ class UniversalWebView extends StatelessWidget {
       (int viewId) => iFrameElement,
     );
 
-    return HtmlElementView(
-      viewType: viewType,
-    );
+    return HtmlElementView(viewType: viewType);
   }
 }
