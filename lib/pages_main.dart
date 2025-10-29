@@ -32,10 +32,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
   bool _isDrawerOpen = false;
-  static const TextStyle optionStyle = TextStyle(
-    fontSize: 30,
-    fontWeight: FontWeight.bold,
-  );
   static const List<Widget> _widgetOptions = <Widget>[
     // Make sure to add at the top: import 'pages/flutter_page.dart';
     FlutterPage(),
