@@ -47,10 +47,7 @@ class _UniversalWebViewState extends State<UniversalWebView> {
     return Stack(
       children: [
         WebViewWidget(controller: _controller),
-        if (_isLoading)
-          const Center(
-            child: CircularProgressIndicator(),
-          ),
+        if (_isLoading) const Center(child: CircularProgressIndicator()),
       ],
     );
   }
