@@ -50,7 +50,7 @@ dependencies:
   googleapis: ^15.0.0
   
   # Package untuk membuka URL di web
-  url_launcher: ^6.2.5
+  url_launcher: ^6.3.2
 
   # Package untuk menampilkan web di dalam aplikasi
   webview_flutter: ^4.13.0
