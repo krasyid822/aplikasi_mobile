@@ -12,7 +12,7 @@ class UniversalWebView extends StatefulWidget {
 
 class _UniversalWebViewState extends State<UniversalWebView> {
   late final WebViewController _controller;
-  bool _isLoading = true;
+  double _progress = 0;
 
   @override
   void initState() {
@@ -21,21 +21,15 @@ class _UniversalWebViewState extends State<UniversalWebView> {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
         NavigationDelegate(
-          onPageStarted: (String url) {
+          onProgress: (int progress) {
             setState(() {
-              _isLoading = true;
+              _progress = progress / 100;
             });
           },
-          onPageFinished: (String url) {
-            setState(() {
-              _isLoading = false;
-            });
-          },
+          onPageStarted: (String url) {},
+          onPageFinished: (String url) {},
           onWebResourceError: (WebResourceError error) {
             // You can handle errors here if you want
-            setState(() {
-              _isLoading = false;
-            });
           },
         ),
       )
@@ -44,10 +38,22 @@ class _UniversalWebViewState extends State<UniversalWebView> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    return Column(
       children: [
-        WebViewWidget(controller: _controller),
-        if (_isLoading) const Center(child: CircularProgressIndicator()),
+        if (_progress > 0 && _progress < 1)
+          LinearProgressIndicator(value: _progress),
+        Expanded(
+          child: Stack(
+            children: [
+              WebViewWidget(controller: _controller),
+              if (_progress < 1)
+                Container(
+                  color: Colors.black.withOpacity(0.5),
+                  child: const Center(child: CircularProgressIndicator()),
+                ),
+            ],
+          ),
+        ),
       ],
     );
   }

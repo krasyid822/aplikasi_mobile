@@ -6,6 +6,6 @@ class PolmedPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const UniversalWebView(url: 'https://www.polmed.ac.id');
+    return const UniversalWebView(url: 'https://polmed.ac.id/');
   }
 }

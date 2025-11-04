@@ -55,6 +55,8 @@ dependencies:
   # Package untuk menampilkan web di dalam aplikasi
   webview_flutter: ^4.13.0
   webview_flutter_web: ^0.2.3+4
+  flutter_svg: ^2.2.1
+  gradient_glow_border: ^2.0.2
 
 
 dev_dependencies:
@@ -83,6 +85,8 @@ flutter:
   assets:
     - assets/audio/huruf/
     - assets/image/
+    - assets/svgs/
+    - assets/image/login/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
