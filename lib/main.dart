@@ -8,6 +8,7 @@ import 'video_gallery_main.dart';
 import 'pengenalhuruf_main.dart';
 import 'pages_main.dart';
 import 'formlogin_main.dart';
+import 'quiz_main.dart';
 
 void main() {
   runApp(const LandingApp());
@@ -389,6 +390,42 @@ class LandingPage extends StatelessWidget {
                         ),
                         TextSpan(
                           text: 'Form Login (Tanpa Database)',
+                          style: TextStyle(fontSize: 18, color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 22),
+
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => QuizApp()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 93, 184, 146),
+                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: RichText(
+                    text: TextSpan(
+                      children: [
+                        WidgetSpan(
+                          child: Padding(
+                            padding: EdgeInsets.only(left: 8.0, right: 8.0),
+                            child: Icon(
+                              Icons.quiz_sharp,
+                              color: const Color.fromARGB(255, 255, 255, 255),
+                            ),
+                          ),
+                        ),
+                        TextSpan(
+                          text: 'Quiz App (Tanpa Database)',
                           style: TextStyle(fontSize: 18, color: Colors.white),
                         ),
                       ],
