@@ -9,6 +9,7 @@ import 'pengenalhuruf_main.dart';
 import 'pages_main.dart';
 import 'formlogin_main.dart';
 import 'quiz_main.dart';
+import 'game_tap_main.dart';
 
 void main() {
   runApp(const LandingApp());
@@ -426,6 +427,42 @@ class LandingPage extends StatelessWidget {
                         ),
                         TextSpan(
                           text: 'Quiz App (Tanpa Database)',
+                          style: TextStyle(fontSize: 18, color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 22),
+
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => GameTapApp()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 101, 184, 93),
+                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: RichText(
+                    text: TextSpan(
+                      children: [
+                        WidgetSpan(
+                          child: Padding(
+                            padding: EdgeInsets.only(left: 8.0, right: 8.0),
+                            child: Icon(
+                              Icons.gamepad,
+                              color: const Color.fromARGB(255, 255, 255, 255),
+                            ),
+                          ),
+                        ),
+                        TextSpan(
+                          text: 'Game Tap App (Dengan Leaderboard)',
                           style: TextStyle(fontSize: 18, color: Colors.white),
                         ),
                       ],
