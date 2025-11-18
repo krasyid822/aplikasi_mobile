@@ -84,6 +84,7 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/audio/huruf/
+    - assets/audio/tap_game/
     - assets/image/
     - assets/svgs/
     - assets/image/login/
