@@ -16,13 +16,15 @@ class MultipagesApp extends StatelessWidget {
     return MaterialApp(
       title: 'MultiPages App',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 255, 68, 221)),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color.fromARGB(255, 255, 68, 221),
+        ),
       ),
-      home: const Multipages_HomePage(),
+      home: const MultipagesHomePage(),
       routes: {
-        '/multipages_about': (context) => const Multipages_AboutPage(),
-        '/multipages_settings': (context) => const Multipages_SettingsPage(),
-        '/multipages_product': (context) => const Multipages_ProductPage (),
+        '/multipages_about': (context) => const MultipagesAboutPage(),
+        '/multipages_settings': (context) => const MultipagesSettingsPage(),
+        '/multipages_product': (context) => const MultipagesProductPage(),
       },
     );
   }

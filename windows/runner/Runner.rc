@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "penghitung_luas_dan_keliling" "\0"
+            VALUE "CompanyName", "com.trpl5a" "\0"
+            VALUE "FileDescription", "Aplikasi Mobile" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "penghitung_luas_dan_keliling" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2025 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "penghitung_luas_dan_keliling.exe" "\0"
-            VALUE "ProductName", "penghitung_luas_dan_keliling" "\0"
+            VALUE "InternalName", "aplikasimobile" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2025 com.trpl5a. All rights reserved." "\0"
+            VALUE "OriginalFilename", "aplikasimobile.exe" "\0"
+            VALUE "ProductName", "Aplikasi Mobile" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

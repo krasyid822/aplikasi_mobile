@@ -48,7 +48,7 @@ class _UniversalWebViewState extends State<UniversalWebView> {
               WebViewWidget(controller: _controller),
               if (_progress < 1)
                 Container(
-                  color: Colors.black.withOpacity(0.5),
+                  color: Colors.black.withAlpha((0.5 * 255).round()),
                   child: const Center(child: CircularProgressIndicator()),
                 ),
             ],

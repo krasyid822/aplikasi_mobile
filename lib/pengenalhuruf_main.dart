@@ -61,7 +61,7 @@ class _PengenalHurufPageState extends State<PengenalHurufPage> {
         AssetSource('audio/huruf/${huruf.toLowerCase()}.wav'),
       );
     } catch (e) {
-      print('Error playing sound: $e');
+      debugPrint('Error playing sound: $e');
     }
   }
 

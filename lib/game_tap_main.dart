@@ -10,7 +10,7 @@ class GameTapApp extends StatefulWidget {
   const GameTapApp({super.key});
 
   @override
-  _GameTapAppState createState() => _GameTapAppState();
+  State<GameTapApp> createState() => _GameTapAppState();
 }
 
 class _GameTapAppState extends State<GameTapApp>
@@ -264,7 +264,8 @@ class _GameTapAppState extends State<GameTapApp>
                         return ListView.separated(
                           shrinkWrap: true,
                           itemCount: data.length,
-                          separatorBuilder: (_, __) => const Divider(height: 1),
+                          separatorBuilder: (context, index) =>
+                              const Divider(height: 1),
                           itemBuilder: (context, index) {
                             final s = data[index];
                             return ListTile(

@@ -22,7 +22,7 @@ class VideoGalleryPage extends StatefulWidget {
   const VideoGalleryPage({super.key});
 
   @override
-  _VideoGalleryPageState createState() => _VideoGalleryPageState();
+  State<VideoGalleryPage> createState() => _VideoGalleryPageState();
 }
 
 class _VideoGalleryPageState extends State<VideoGalleryPage> {
@@ -816,7 +816,9 @@ class _VideoGalleryPageState extends State<VideoGalleryPage> {
                                     // Play Button di tengah thumbnail
                                     Positioned.fill(
                                       child: Container(
-                                        color: Colors.black.withOpacity(0.3),
+                                        color: Colors.black.withAlpha(
+                                          (0.3 * 255).round(),
+                                        ),
                                         child: Center(
                                           child: GestureDetector(
                                             onTap: () =>
@@ -824,8 +826,8 @@ class _VideoGalleryPageState extends State<VideoGalleryPage> {
                                             child: Container(
                                               padding: EdgeInsets.all(12),
                                               decoration: BoxDecoration(
-                                                color: Colors.red.withOpacity(
-                                                  0.9,
+                                                color: Colors.red.withAlpha(
+                                                  (0.9 * 255).round(),
                                                 ),
                                                 shape: BoxShape.circle,
                                               ),
@@ -1134,6 +1136,7 @@ class _VideoGalleryPageState extends State<VideoGalleryPage> {
   void _shareVideo(Map<String, String> video) {
     // Copy URL video ke clipboard
     Clipboard.setData(ClipboardData(text: video['url']!)).then((_) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -1174,7 +1177,7 @@ class _VideoPlayerPage extends StatefulWidget {
   });
 
   @override
-  _VideoPlayerPageState createState() => _VideoPlayerPageState();
+  State<_VideoPlayerPage> createState() => _VideoPlayerPageState();
 }
 
 class _VideoPlayerPageState extends State<_VideoPlayerPage> {
@@ -1232,6 +1235,7 @@ class _VideoPlayerPageState extends State<_VideoPlayerPage> {
 
   @override
   Widget build(BuildContext context) {
+    // ignore: deprecated_member_use
     return WillPopScope(
       onWillPop: () async {
         // Jika dalam mode fullscreen, keluar dari fullscreen dulu
@@ -1396,6 +1400,7 @@ class _VideoPlayerPageState extends State<_VideoPlayerPage> {
   // Function untuk share video dengan copy to clipboard
   void _shareVideo(Map<String, String> video) {
     Clipboard.setData(ClipboardData(text: video['url']!)).then((_) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(

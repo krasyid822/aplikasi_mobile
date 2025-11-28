@@ -1,6 +1,6 @@
 {
-    "name": "penghitung_luas_dan_keliling",
-    "short_name": "penghitung_luas_dan_keliling",
+    "name": "Aplikasi Mobile",
+    "short_name": "Aplikasi Mobile",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

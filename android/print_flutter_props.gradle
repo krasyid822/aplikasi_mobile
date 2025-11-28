@@ -1,0 +1,14 @@
+gradle.projectsEvaluated {
+    try {
+        rootProject.allprojects.each { p ->
+            def f = p.extensions.findByName('flutter')
+            if (f != null) {
+                println "project=${p.path} flutter.compileSdkVersion=${f.compileSdkVersion}"
+                println "project=${p.path} flutter.targetSdkVersion=${f.targetSdkVersion}"
+                println "project=${p.path} flutter.minSdkVersion=${f.minSdkVersion}"
+            }
+        }
+    } catch (Exception e) {
+        println "error reading flutter extension: ${e.message}"
+    }
+}

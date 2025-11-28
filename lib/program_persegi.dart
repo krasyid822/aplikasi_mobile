@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MaterialApp(
-    home: PersegiApp(),
-    debugShowCheckedModeBanner: false,
-  ));
+  runApp(MaterialApp(home: PersegiApp(), debugShowCheckedModeBanner: false));
 }
 
 class PersegiApp extends StatefulWidget {
   const PersegiApp({super.key});
 
   @override
-  _PersegiAppState createState() => _PersegiAppState();
+  @override
+  State<PersegiApp> createState() => _PersegiAppState();
 }
 
 class _PersegiAppState extends State<PersegiApp> {
@@ -37,7 +35,6 @@ class _PersegiAppState extends State<PersegiApp> {
         backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
-        
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
@@ -50,7 +47,7 @@ class _PersegiAppState extends State<PersegiApp> {
                 border: OutlineInputBorder(),
               ),
             ),
-            
+
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: hitung,

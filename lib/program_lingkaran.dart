@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MaterialApp(
-    home: LingkaranApp(),
-    debugShowCheckedModeBanner: false,
-  ));
+  runApp(MaterialApp(home: LingkaranApp(), debugShowCheckedModeBanner: false));
 }
 
 class LingkaranApp extends StatefulWidget {
   const LingkaranApp({super.key});
 
   @override
-  _LingkaranAppState createState() => _LingkaranAppState();
+  @override
+  State<LingkaranApp> createState() => _LingkaranAppState();
 }
 
 class _LingkaranAppState extends State<LingkaranApp> {
@@ -45,12 +43,14 @@ class _LingkaranAppState extends State<LingkaranApp> {
         backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
-        
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             Icon(Icons.circle_outlined, size: 80, color: Colors.blueAccent),
-            Text("data dari diameter atau jari-jari. Isi salah satu, jangan keduanya.", style: TextStyle(fontSize: 16)),
+            Text(
+              "data dari diameter atau jari-jari. Isi salah satu, jangan keduanya.",
+              style: TextStyle(fontSize: 16),
+            ),
             TextField(
               controller: jariController,
               keyboardType: TextInputType.number,
@@ -68,7 +68,7 @@ class _LingkaranAppState extends State<LingkaranApp> {
                 border: OutlineInputBorder(),
               ),
             ),
-            
+
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: hitung,

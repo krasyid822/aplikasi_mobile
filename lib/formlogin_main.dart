@@ -112,14 +112,13 @@ class _LoginPageState extends State<LoginPage>
                         BoxShadow(
                           color: Theme.of(
                             context,
-                          ).colorScheme.primary.withOpacity(0.6),
+                          ).colorScheme.primary.withAlpha((0.6 * 255).round()),
                           blurRadius: _glowAnimation.value,
                           spreadRadius: _glowAnimation.value / 2,
                         ),
                         BoxShadow(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.secondary.withOpacity(0.4),
+                          color: Theme.of(context).colorScheme.secondary
+                              .withAlpha((0.4 * 255).round()),
                           blurRadius: _glowAnimation.value * 1.5,
                           spreadRadius: _glowAnimation.value / 3,
                         ),

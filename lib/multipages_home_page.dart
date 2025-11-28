@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class Multipages_HomePage extends StatelessWidget {
-  const Multipages_HomePage({super.key});
+class MultipagesHomePage extends StatelessWidget {
+  const MultipagesHomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -33,8 +33,8 @@ class Multipages_HomePage extends StatelessWidget {
                 child: Text('Settings'),
               ),
             ],
-          )
-       ],
+          ),
+        ],
       ),
       body: Center(
         child: Column(
@@ -55,14 +55,14 @@ class Multipages_HomePage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-          onPressed: () {
-            Navigator.pushNamed(context, '/multipages_about');
-          },
-          child: const Text('Go to About Page'),
-        ),
+              onPressed: () {
+                Navigator.pushNamed(context, '/multipages_about');
+              },
+              child: const Text('Go to About Page'),
+            ),
           ],
         ),
-    ),
+      ),
     );
   }
 }

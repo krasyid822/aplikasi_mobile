@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 
-class Multipages_AboutPage extends StatelessWidget {
-  const Multipages_AboutPage({super.key});
+class MultipagesAboutPage extends StatelessWidget {
+  const MultipagesAboutPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('About Page'),
-      ),
+      appBar: AppBar(title: const Text('About Page')),
       body: const Center(
         child: Text(
           'Ini adalah halaman About.',

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MaterialApp(
-    home: PersegiPanjangApp(),
-    debugShowCheckedModeBanner: false,
-  ));
+  runApp(
+    MaterialApp(home: PersegiPanjangApp(), debugShowCheckedModeBanner: false),
+  );
 }
 
 class PersegiPanjangApp extends StatefulWidget {
   const PersegiPanjangApp({super.key});
 
   @override
-  _PersegiPanjangAppState createState() => _PersegiPanjangAppState();
+  @override
+  State<PersegiPanjangApp> createState() => _PersegiPanjangAppState();
 }
 
 class _PersegiPanjangAppState extends State<PersegiPanjangApp> {
@@ -39,7 +39,6 @@ class _PersegiPanjangAppState extends State<PersegiPanjangApp> {
         backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
-        
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [

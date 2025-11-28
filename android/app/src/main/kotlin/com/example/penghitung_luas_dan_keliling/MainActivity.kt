@@ -1,5 +1,3 @@
-package com.example.penghitung_luas_dan_keliling
+// Duplicate MainActivity removed — kept the one under com.trpl5a.aplikasimobile
+// Original file moved/disabled to avoid Kotlin redeclaration during build.
 
-import io.flutter.embedding.android.FlutterActivity
-
-class MainActivity : FlutterActivity()

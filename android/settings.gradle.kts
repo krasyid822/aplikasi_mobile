@@ -18,8 +18,10 @@ pluginManagement {
 }
 
 plugins {
-    id("dev.flutter.flutter-plugin-loader") version "1.0.2"
-    id("com.android.application") version "8.13.1" apply false
+    id("dev.flutter.flutter-plugin-loader") version "1.0.0"
+    // Upgraded Android Gradle Plugin to 8.13
+    id("com.android.application") version "8.13.0" apply false
+    // Kotlin plugin bumped to 2.2.21
     id("org.jetbrains.kotlin.android") version "2.2.21" apply false
 }
 

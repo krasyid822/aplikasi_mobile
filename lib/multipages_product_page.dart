@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class Multipages_ProductPage extends StatelessWidget {
-  const Multipages_ProductPage({super.key});
+class MultipagesProductPage extends StatelessWidget {
+  const MultipagesProductPage({super.key});
 
   final List<String> images = const [
     'https://images.pexels.com/photos/33985102/pexels-photo-33985102.jpeg',
@@ -13,10 +13,7 @@ class Multipages_ProductPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Gallery Produk'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Gallery Produk'), centerTitle: true),
       body: GridView.builder(
         padding: const EdgeInsets.all(10),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -26,12 +23,9 @@ class Multipages_ProductPage extends StatelessWidget {
         ),
         itemCount: images.length,
         itemBuilder: (context, index) {
-          return Image.network(
-            images[index],
-            fit: BoxFit.cover,
-          );
+          return Image.network(images[index], fit: BoxFit.cover);
         },
       ),
-      );
+    );
   }
 }
