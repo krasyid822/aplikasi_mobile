@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:math' show min;
 import 'dart:io';
 import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'proyek_uas_kirim.dart';
 import 'proyek_uas_terima.dart';
 
@@ -42,6 +43,10 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   String _lanIp = '-';
   String _ssid = '-';
+  String _ssidLabel = 'SSID';
+  Map<String, String> _addrToInterface = {};
+  final List<String> _candidates = [];
+  String? _selectedIp;
 
   @override
   void initState() {
@@ -52,21 +57,26 @@ class _DashboardPageState extends State<DashboardPage> {
   Future<void> _fetchNetworkInfo() async {
     String lan = '-';
     String ssid = '-';
+
+    final Map<String, String> addrToInterface = {};
+    final candidates = <String>[];
+    String? pick;
+
     try {
       final interfaces = await NetworkInterface.list(
         includeLoopback: true,
         type: InternetAddressType.IPv4,
       );
-      final candidates = <String>[];
       for (final ni in interfaces) {
         for (final addr in ni.addresses) {
           final a = addr.address;
           if (addr.type != InternetAddressType.IPv4) continue;
           if (a.startsWith('169.254.')) continue;
           candidates.add(a);
+          addrToInterface[a] = ni.name;
         }
       }
-      String? pick;
+
       for (final c in candidates) {
         if (c.startsWith('192.168.') ||
             c.startsWith('10.') ||
@@ -75,32 +85,141 @@ class _DashboardPageState extends State<DashboardPage> {
           break;
         }
       }
+
       pick ??= candidates.isNotEmpty
           ? candidates.first
           : InternetAddress.loopbackIPv4.address;
       lan = pick;
-    } catch (_) {}
+    } catch (_) {
+      // ignore errors enumerating interfaces
+    }
 
     try {
-      final Map? info = await MethodChannel(
-        'proyek_uas/network',
-      ).invokeMapMethod('getWifiInfo');
-      if (info != null) {
-        if (info['ssid'] != null) ssid = info['ssid'] as String;
-        if (info['ip'] != null &&
-            (lan == '-' || lan == InternetAddress.loopbackIPv4.address)) {
-          lan = info['ip'] as String;
+      if (Platform.isWindows) {
+        _ssidLabel = 'Interface';
+        ssid = addrToInterface[pick] ?? '-';
+      } else if (Platform.isAndroid) {
+        final status = await Permission.location.status;
+        if (!status.isGranted) {
+          final result = await Permission.location.request();
+          if (!result.isGranted) {
+            ssid = '<permission required>';
+          } else {
+            final Map? info = await MethodChannel(
+              'proyek_uas/network',
+            ).invokeMapMethod('getWifiInfo');
+            if (info != null) {
+              if (info['ssid'] != null) ssid = info['ssid'] as String;
+              if (info['ip'] != null &&
+                  (lan == '-' || lan == InternetAddress.loopbackIPv4.address)) {
+                lan = info['ip'] as String;
+              }
+            }
+          }
+        } else {
+          final Map? info = await MethodChannel(
+            'proyek_uas/network',
+          ).invokeMapMethod('getWifiInfo');
+          if (info != null) {
+            if (info['ssid'] != null) ssid = info['ssid'] as String;
+            if (info['ip'] != null &&
+                (lan == '-' || lan == InternetAddress.loopbackIPv4.address)) {
+              lan = info['ip'] as String;
+            }
+          }
+
+          // If SSID wasn't returned or is a placeholder (e.g. permission message
+          // or '<unknown ssid>'), fall back to showing the interface name.
+          final unknown =
+              ssid.trim().isEmpty ||
+              ssid.startsWith('<') ||
+              ssid.toLowerCase().contains('unknown');
+          if (unknown) {
+            _ssidLabel = 'Interface';
+            ssid = addrToInterface[pick] ?? ssid;
+          }
+        }
+      } else {
+        try {
+          final Map? info = await MethodChannel(
+            'proyek_uas/network',
+          ).invokeMapMethod('getWifiInfo');
+          if (info != null && info['ssid'] != null) {
+            ssid = info['ssid'] as String;
+          } else {
+            _ssidLabel = 'Interface';
+            ssid = addrToInterface[pick] ?? '-';
+          }
+          if (info != null &&
+              info['ip'] != null &&
+              (lan == '-' || lan == InternetAddress.loopbackIPv4.address)) {
+            lan = info['ip'] as String;
+          }
+        } catch (_) {
+          _ssidLabel = 'Interface';
+          ssid = addrToInterface[pick] ?? '-';
         }
       }
     } catch (_) {
-      // ignore - platform not available
+      // ignore - permission or platform channel errors
     }
 
     if (!mounted) return;
     setState(() {
+      _addrToInterface = addrToInterface;
+      _candidates.clear();
+      _candidates.addAll(candidates);
+      _selectedIp = pick;
       _lanIp = lan;
       _ssid = ssid;
     });
+  }
+
+  Future<void> _showInterfacePicker() async {
+    if (_candidates.isEmpty) return;
+    final chosen = await showModalBottomSheet<String>(
+      context: context,
+      builder: (ctx) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
+                ),
+                child: Text(
+                  'Pilih Interface',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+              const Divider(height: 1),
+              ..._candidates.map((ip) {
+                final name = _addrToInterface[ip] ?? '-';
+                return ListTile(
+                  title: Text(ip),
+                  subtitle: Text(name),
+                  trailing: ip == _selectedIp ? const Icon(Icons.check) : null,
+                  onTap: () => Navigator.of(ctx).pop(ip),
+                );
+              }),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (chosen != null && mounted) {
+      setState(() {
+        _selectedIp = chosen;
+        _lanIp = chosen;
+        if (_ssidLabel == 'Interface') {
+          _ssid = _addrToInterface[chosen] ?? _ssid;
+        }
+      });
+    }
   }
 
   @override
@@ -127,7 +246,12 @@ class _DashboardPageState extends State<DashboardPage> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - 48,
+                  // ensure minHeight is non-negative to avoid runtime layout errors
+                  minHeight: constraints.maxHeight.isFinite
+                      ? (constraints.maxHeight > 48
+                            ? constraints.maxHeight - 48
+                            : 0.0)
+                      : 0.0,
                 ),
                 child: IntrinsicHeight(
                   child: Center(
@@ -159,30 +283,45 @@ class _DashboardPageState extends State<DashboardPage> {
                                 ],
                               ),
                               const SizedBox(height: 4),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(
-                                    Icons.router,
-                                    size: 16,
-                                    color: Colors.white60,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  ConstrainedBox(
-                                    constraints: BoxConstraints(
-                                      maxWidth: maxCardWidth * 0.9,
+                              InkWell(
+                                onTap: _showInterfacePicker,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.router,
+                                      size: 16,
+                                      color: Colors.white60,
                                     ),
-                                    child: Text(
-                                      'SSID: $_ssid',
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        color: Colors.white70,
+                                    const SizedBox(width: 8),
+                                    ConstrainedBox(
+                                      constraints: BoxConstraints(
+                                        maxWidth: maxCardWidth * 0.9,
                                       ),
-                                      overflow: TextOverflow.ellipsis,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              '$_ssidLabel: $_ssid',
+                                              textAlign: TextAlign.center,
+                                              style: const TextStyle(
+                                                color: Colors.white70,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          const Icon(
+                                            Icons.arrow_drop_down,
+                                            color: Colors.white60,
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ],
                           ),
