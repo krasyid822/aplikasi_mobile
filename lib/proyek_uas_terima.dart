@@ -96,7 +96,7 @@ class _ProyekUasTerimaState extends State<ProyekUasTerima> {
                         },
                         icon: const Icon(Icons.qr_code_scanner, size: 28),
                         label: const Text(
-                          'Mulai Ulang Pindai',
+                          'Pindai Lagi',
                           style: TextStyle(fontSize: 16),
                         ),
                         style: ElevatedButton.styleFrom(
@@ -104,7 +104,7 @@ class _ProyekUasTerimaState extends State<ProyekUasTerima> {
                             vertical: 14.0,
                             horizontal: 20.0,
                           ),
-                          backgroundColor: const Color(0xFF5B3EA3),
+                          backgroundColor: const Color.fromARGB(0, 91, 62, 163),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -134,9 +134,9 @@ class _ProyekUasTerimaState extends State<ProyekUasTerima> {
                         ElevatedButton.icon(
                           onPressed: null,
                           icon: const Icon(Icons.qr_code_scanner),
-                          label: const Text('Mulai Ulang Pindai'),
+                          label: const Text('Pindai Lagi'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF5B3EA3),
+                            backgroundColor: const Color.fromARGB(0, 255, 255, 255),
                           ),
                         ),
                       const SizedBox(width: 12),
