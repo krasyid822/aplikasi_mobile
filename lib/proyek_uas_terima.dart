@@ -121,25 +121,17 @@ class _ProyekUasTerimaState extends State<ProyekUasTerima> {
                       if (_scanned != null)
                         OutlinedButton.icon(
                           onPressed: () async {
-                            // open URL or show info - try to launch via url_launcher if available
                             final url = _scanned!;
-                            // show simple dialog with option to copy
-                            await showDialog<void>(
-                              context: context,
-                              builder: (ctx) => AlertDialog(
-                                title: const Text('Kode terdeteksi'),
-                                content: SelectableText(url),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.of(ctx).pop(),
-                                    child: const Text('Tutup'),
-                                  ),
-                                ],
-                              ),
-                            );
+                            if (mounted) {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => ProyekUasUnduh(url: url),
+                                ),
+                              );
+                            }
                           },
                           icon: const Icon(Icons.open_in_new),
-                          label: const Text('Lihat Kode'),
+                          label: const Text('Lihat Unduh'),
                         ),
                     ],
                   ),
