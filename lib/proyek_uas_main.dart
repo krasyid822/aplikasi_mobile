@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math' show min;
 import 'proyek_uas_kirim.dart';
 import 'proyek_uas_terima.dart';
 
@@ -59,65 +60,74 @@ class DashboardPage extends StatelessWidget {
                   minHeight: constraints.maxHeight - 48,
                 ),
                 child: IntrinsicHeight(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Use Row when wide, Column when narrow
-                      if (isWide)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _DashboardCard(
-                              width: maxCardWidth,
-                              height: 260,
-                              title: 'Kirim file',
-                              subtitle: 'Tunjukkan Kode',
-                              icon: Icons.qr_code,
-                              colors: const [
-                                Color(0xFF5B3EA3),
-                                Color(0xFF4A2F7B),
-                              ],
-                              onTap: () =>
-                                  Navigator.pushNamed(context, '/show'),
-                            ),
-                            const SizedBox(width: 20),
-                            _DashboardCard(
-                              width: maxCardWidth,
-                              height: 260,
-                              title: 'Terima file',
-                              subtitle: 'Pindai Kode',
-                              icon: Icons.qr_code_scanner,
-                              colors: const [
-                                Color(0xFF5B5963),
-                                Color(0xFF474650),
-                              ],
-                              onTap: () =>
-                                  Navigator.pushNamed(context, '/scan'),
-                            ),
-                          ],
-                        )
-                      else ...[
-                        _DashboardCard(
-                          width: maxCardWidth,
-                          height: 200,
-                          title: 'Kirim file',
-                          subtitle: 'Tunjukkan Kode',
-                          icon: Icons.qr_code,
-                          colors: const [Color(0xFF5B3EA3), Color(0xFF4A2F7B)],
-                          onTap: () => Navigator.pushNamed(context, '/show'),
-                        ),
-                        const SizedBox(height: 18),
-                        _DashboardCard(
-                          width: maxCardWidth,
-                          height: 200,
-                          title: 'Terima file',
-                          subtitle: 'Pindai Kode',
-                          icon: Icons.qr_code_scanner,
-                          colors: const [Color(0xFF5B5963), Color(0xFF474650)],
-                          onTap: () => Navigator.pushNamed(context, '/scan'),
-                        ),
+                  child: Center(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Use Row when wide, Column when narrow
+                        if (isWide)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _DashboardCard(
+                                width: maxCardWidth,
+                                height: 260,
+                                title: 'Kirim file',
+                                subtitle: 'Tunjukkan Kode',
+                                icon: Icons.qr_code,
+                                colors: const [
+                                  Color(0xFF5B3EA3),
+                                  Color(0xFF4A2F7B),
+                                ],
+                                onTap: () =>
+                                    Navigator.pushNamed(context, '/show'),
+                              ),
+                              const SizedBox(width: 20),
+                              _DashboardCard(
+                                width: maxCardWidth,
+                                height: 260,
+                                title: 'Terima file',
+                                subtitle: 'Pindai Kode',
+                                icon: Icons.qr_code_scanner,
+                                colors: const [
+                                  Color(0xFF5B5963),
+                                  Color(0xFF474650),
+                                ],
+                                onTap: () =>
+                                    Navigator.pushNamed(context, '/scan'),
+                              ),
+                            ],
+                          )
+                        else ...[
+                          _DashboardCard(
+                            width: maxCardWidth,
+                            height: 200,
+                            title: 'Kirim file',
+                            subtitle: 'Tunjukkan Kode',
+                            icon: Icons.qr_code,
+                            colors: const [
+                              Color(0xFF5B3EA3),
+                              Color(0xFF4A2F7B),
+                            ],
+                            onTap: () => Navigator.pushNamed(context, '/show'),
+                          ),
+                          const SizedBox(height: 18),
+                          _DashboardCard(
+                            width: maxCardWidth,
+                            height: 200,
+                            title: 'Terima file',
+                            subtitle: 'Pindai Kode',
+                            icon: Icons.qr_code_scanner,
+                            colors: const [
+                              Color(0xFF5B5963),
+                              Color(0xFF474650),
+                            ],
+                            onTap: () => Navigator.pushNamed(context, '/scan'),
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -164,40 +174,63 @@ class _DashboardCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
         ),
         padding: const EdgeInsets.all(14),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: (width ?? 160) * 0.35,
-              height: (width ?? 160) * 0.35,
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                icon,
-                size: ((width ?? 160) * 0.35) * 0.5,
-                color: Colors.white70,
-              ),
-            ),
-            const SizedBox(height: 14),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: (width ?? 160) > 200 ? 20 : 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: (width ?? 160) > 200 ? 14 : 12,
-                color: Colors.white70,
-              ),
-            ),
-          ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // compute sizes based on available space to avoid overflow
+            final availableW = constraints.maxWidth.isFinite
+                ? constraints.maxWidth
+                : (width ?? 160);
+            final availableH = constraints.maxHeight.isFinite
+                ? constraints.maxHeight
+                : (height ?? 160);
+            final base = min(availableW, availableH);
+            final iconBoxSize =
+                base * 0.25; // a bit smaller to leave room for text
+            final iconSize = iconBoxSize * 0.5;
+            final titleFont = base > 200 ? 20.0 : 16.0;
+            final subtitleFont = base > 200 ? 14.0 : 12.0;
+
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: iconBoxSize,
+                  height: iconBoxSize,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, size: iconSize, color: Colors.white70),
+                ),
+                const SizedBox(height: 12),
+                Flexible(
+                  flex: 0,
+                  child: Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: titleFont,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Flexible(
+                  child: Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: subtitleFont,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

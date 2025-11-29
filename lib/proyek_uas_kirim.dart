@@ -137,7 +137,7 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
           ? candidates
           : [InternetAddress.loopbackIPv4.address];
       _hostIp = pick;
-      _qrData = 'http://$_hostIp:$_port/file';
+      _qrData = 'http://$_hostIp:$_port/ezypizy';
 
       // QR widget will render _qrData
 
@@ -148,7 +148,7 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
       // Start listening
       serverBound.listen((HttpRequest req) async {
         try {
-          if (req.method == 'GET' && req.uri.path == '/file') {
+          if (req.method == 'GET' && req.uri.path == '/ezypizy') {
             final bytes = await file.readAsBytes();
             req.response.headers.contentType = ContentType(
               'application',
@@ -340,7 +340,7 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
                             if (v == null) return;
                             setState(() {
                               _hostIp = v;
-                              _qrData = 'http://$_hostIp:$_port/file';
+                              _qrData = 'http://$_hostIp:$_port/ezypizy';
                             });
                           },
                         ),
@@ -355,8 +355,10 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
                 ],
 
                 const SizedBox(height: 16),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8,
                   children: [
                     if (_firewallOk)
                       const Icon(
@@ -370,17 +372,21 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
                         color: Colors.orange,
                         size: 16,
                       ),
-                    const SizedBox(width: 8),
-                    Text(
-                      _status,
-                      style: const TextStyle(color: Colors.white60),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 600),
+                      child: Text(
+                        _status,
+                        style: const TextStyle(color: Colors.white60),
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 12,
+                  runSpacing: 8,
                   children: [
                     ElevatedButton.icon(
                       onPressed: _qrData == null
@@ -403,7 +409,6 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
                         backgroundColor: const Color(0xFF5B3EA3),
                       ),
                     ),
-                    const SizedBox(width: 12),
                     OutlinedButton.icon(
                       onPressed: _file == null
                           ? null
@@ -428,7 +433,6 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
                         side: const BorderSide(color: Colors.white24),
                       ),
                     ),
-                    const SizedBox(width: 12),
                     TextButton.icon(
                       onPressed: () async {
                         await _stopServer();
