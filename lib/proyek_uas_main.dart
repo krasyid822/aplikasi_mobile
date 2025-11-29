@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math' show min;
+import 'dart:io';
+import 'package:flutter/services.dart';
 import 'proyek_uas_kirim.dart';
 import 'proyek_uas_terima.dart';
 
@@ -30,8 +32,76 @@ class ProyekUasApp extends StatelessWidget {
   }
 }
 
-class DashboardPage extends StatelessWidget {
+class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
+
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  String _lanIp = '-';
+  String _ssid = '-';
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchNetworkInfo();
+  }
+
+  Future<void> _fetchNetworkInfo() async {
+    String lan = '-';
+    String ssid = '-';
+    try {
+      final interfaces = await NetworkInterface.list(
+        includeLoopback: true,
+        type: InternetAddressType.IPv4,
+      );
+      final candidates = <String>[];
+      for (final ni in interfaces) {
+        for (final addr in ni.addresses) {
+          final a = addr.address;
+          if (addr.type != InternetAddressType.IPv4) continue;
+          if (a.startsWith('169.254.')) continue;
+          candidates.add(a);
+        }
+      }
+      String? pick;
+      for (final c in candidates) {
+        if (c.startsWith('192.168.') ||
+            c.startsWith('10.') ||
+            RegExp(r'^172\.(1[6-9]|2[0-9]|3[0-1])\.').hasMatch(c)) {
+          pick = c;
+          break;
+        }
+      }
+      pick ??= candidates.isNotEmpty
+          ? candidates.first
+          : InternetAddress.loopbackIPv4.address;
+      lan = pick;
+    } catch (_) {}
+
+    try {
+      final Map? info = await MethodChannel(
+        'proyek_uas/network',
+      ).invokeMapMethod('getWifiInfo');
+      if (info != null) {
+        if (info['ssid'] != null) ssid = info['ssid'] as String;
+        if (info['ip'] != null &&
+            (lan == '-' || lan == InternetAddress.loopbackIPv4.address)) {
+          lan = info['ip'] as String;
+        }
+      }
+    } catch (_) {
+      // ignore - platform not available
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _lanIp = lan;
+      _ssid = ssid;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +135,59 @@ class DashboardPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        // Network info above the first card: compact two-line block
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.wifi,
+                                    size: 16,
+                                    color: Colors.white60,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'LAN: $_lanIp',
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.router,
+                                    size: 16,
+                                    color: Colors.white60,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      maxWidth: maxCardWidth * 0.9,
+                                    ),
+                                    child: Text(
+                                      'SSID: $_ssid',
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+
                         // Use Row when wide, Column when narrow
                         if (isWide)
                           Row(
