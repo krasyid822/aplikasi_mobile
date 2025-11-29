@@ -62,19 +62,19 @@ class _LandingPageState extends State<LandingPage> {
       {
         'title': 'Persegi Panjang',
         'icon': Icons.rectangle_outlined,
-        'color': Colors.blueAccent,
+        'color': Colors.transparent,
         'builder': () => PersegiPanjangApp(),
       },
       {
         'title': 'Persegi',
         'icon': Icons.square_outlined,
-        'color': Colors.blueAccent,
+        'color': Colors.transparent,
         'builder': () => PersegiApp(),
       },
       {
         'title': 'Lingkaran',
         'icon': Icons.circle_outlined,
-        'color': Colors.blueAccent,
+        'color': Colors.transparent,
         'builder': () => LingkaranApp(),
       },
       {
@@ -92,43 +92,43 @@ class _LandingPageState extends State<LandingPage> {
       {
         'title': 'GALLERY VIDEO',
         'icon': Icons.video_library_outlined,
-        'color': Colors.teal,
+        'color': Colors.black,
         'builder': () => VideoGalleryApp(),
       },
       {
         'title': 'PENGENAL HURUF',
         'icon': Icons.abc,
-        'color': const Color.fromARGB(255, 132, 0, 150),
+        'color': Colors.orange,
         'builder': () => PengenalHurufApp(),
       },
       {
         'title': 'WEBVIEW MULTI PAGE',
         'icon': Icons.web,
-        'color': const Color.fromARGB(255, 117, 150, 0),
+        'color': Colors.purple,
         'builder': () => WebViewApp(),
       },
       {
         'title': 'Form Login (Tanpa Database)',
         'icon': Icons.login,
-        'color': const Color.fromARGB(255, 150, 122, 0),
+        'color': Colors.blue,
         'builder': () => LoginApp(),
       },
       {
         'title': 'Quiz App (Tanpa Database)',
         'icon': Icons.quiz_sharp,
-        'color': const Color.fromARGB(255, 93, 184, 146),
+        'color': Colors.deepPurpleAccent,
         'builder': () => QuizApp(),
       },
       {
         'title': 'Game Tap App (Dengan Leaderboard)',
         'icon': Icons.gamepad,
-        'color': const Color.fromARGB(255, 101, 184, 93),
+        'color': Colors.lightBlueAccent,
         'builder': () => GameTapApp(),
       },
       {
         'title': 'Proyek UAS - Berbagi File Lintas Platform',
         'icon': Icons.share,
-        'color': const Color.fromARGB(255, 93, 125, 184),
+        'color': const Color.fromARGB(255, 53, 42, 52),
         'builder': () => ProyekUasApp(),
       },
     ];
@@ -166,7 +166,7 @@ class _LandingPageState extends State<LandingPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const Center(
-                  child: Icon(Icons.home, size: 72, color: Colors.blueAccent),
+                  child: Icon(Icons.home, size: 72, color: Colors.black),
                 ),
                 const SizedBox(height: 12),
                 const Center(
@@ -190,10 +190,10 @@ class _LandingPageState extends State<LandingPage> {
                 TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.search),
+                    prefixIcon: const Icon(Icons.manage_search),
                     hintText: 'Cari tombol...',
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0),
+                      borderRadius: BorderRadius.circular(22.0),
                     ),
                     contentPadding: const EdgeInsets.symmetric(
                       vertical: 12.0,

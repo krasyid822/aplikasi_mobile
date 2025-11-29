@@ -40,13 +40,13 @@ class _LingkaranAppState extends State<LingkaranApp> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Hitung Lingkaran"),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Icon(Icons.circle_outlined, size: 80, color: Colors.blueAccent),
+            Icon(Icons.circle_outlined, size: 80, color: Colors.black),
             Text(
               "data dari diameter atau jari-jari. Isi salah satu, jangan keduanya.",
               style: TextStyle(fontSize: 16),
@@ -73,7 +73,7 @@ class _LingkaranAppState extends State<LingkaranApp> {
             ElevatedButton(
               onPressed: hitung,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueAccent,
+                backgroundColor: Colors.transparent,
                 padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
               ),
               child: Text("Hitung"),

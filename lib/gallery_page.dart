@@ -107,7 +107,7 @@ class _GalleryPageState extends State<GalleryPage> {
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withAlpha((0.3 * 255).round()),
+                    color: Colors.transparent.withAlpha((0.3 * 255).round()),
                     spreadRadius: 1,
                     blurRadius: 3,
                     offset: const Offset(0, 2),
@@ -129,7 +129,7 @@ class _GalleryPageState extends State<GalleryPage> {
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     decoration: const BoxDecoration(
-                      color: Colors.white,
+                      color: Colors.red,
                       borderRadius: BorderRadius.only(
                         bottomLeft: Radius.circular(8),
                         bottomRight: Radius.circular(8),

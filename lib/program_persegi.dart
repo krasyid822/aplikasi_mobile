@@ -32,13 +32,13 @@ class _PersegiAppState extends State<PersegiApp> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Hitung Persegi"),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Icon(Icons.square_outlined, size: 80, color: Colors.blueAccent),
+            Icon(Icons.square_outlined, size: 80, color: Colors.black),
             TextField(
               controller: panjangSisiController,
               keyboardType: TextInputType.number,
@@ -52,7 +52,7 @@ class _PersegiAppState extends State<PersegiApp> {
             ElevatedButton(
               onPressed: hitung,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueAccent,
+                backgroundColor: Colors.transparent,
                 padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
               ),
               child: Text("Hitung"),

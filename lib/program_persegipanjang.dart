@@ -36,13 +36,13 @@ class _PersegiPanjangAppState extends State<PersegiPanjangApp> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Hitung Persegi Panjang"),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Icon(Icons.rectangle_outlined, size: 80, color: Colors.blueAccent),
+            Icon(Icons.rectangle_outlined, size: 80, color: Colors.black),
             TextField(
               controller: panjangController,
               keyboardType: TextInputType.number,
@@ -64,7 +64,7 @@ class _PersegiPanjangAppState extends State<PersegiPanjangApp> {
             ElevatedButton(
               onPressed: hitung,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueAccent,
+                backgroundColor: Colors.transparent,
                 padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
               ),
               child: Text("Hitung"),
