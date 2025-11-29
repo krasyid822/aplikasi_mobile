@@ -7,37 +7,25 @@ plugins {
 
 android {
     namespace = "com.trpl5a.aplikasimobile"
-    // Pin compileSdk to match installed Android SDK (was flutter.compileSdkVersion)
-    compileSdk = 36
-    // Pin NDK to stable r29 installed on this machine.
-    // Previously set to flutter.ndkVersion; pinning avoids unexpected NDK resolution changes.
-    ndkVersion = "29.0.13846066"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
 
-    // Ensure Android Gradle Plugin uses a specific CMake version from the SDK.
-    externalNativeBuild {
-        cmake {
-            version = "4.2.0"
-        }
-    }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_24
+        targetCompatibility = JavaVersion.VERSION_24
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
+        jvmTarget = JavaVersion.VERSION_24.toString()
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        // Application ID: align with Kotlin package in MainActivity
         applicationId = "com.trpl5a.aplikasimobile"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        // Pin minSdk/targetSdk to match the SDKs installed on this machine.
-        // minSdk was flutter.minSdkVersion
-        minSdk = 24
-        // targetSdk was flutter.targetSdkVersion
-        targetSdk = 36
+        minSdk = flutter.minSdkVersion
+        targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
