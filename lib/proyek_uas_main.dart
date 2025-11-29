@@ -306,14 +306,14 @@ class _DashboardPageState extends State<DashboardPage> {
                               Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(
+                                  /* const Icon(
                                     Icons.wifi,
                                     size: 16,
                                     color: Colors.white60,
-                                  ),
+                                  ), */
                                   const SizedBox(width: 8),
                                   Text(
-                                    'LAN: $_lanIp',
+                                    'IP Address: $_lanIp',
                                     style: const TextStyle(
                                       color: Colors.white70,
                                     ),
@@ -327,11 +327,11 @@ class _DashboardPageState extends State<DashboardPage> {
                                   mainAxisSize: MainAxisSize.min,
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    const Icon(
+                                    /* const Icon(
                                       Icons.router,
                                       size: 16,
                                       color: Colors.white60,
-                                    ),
+                                    ), */
                                     const SizedBox(width: 8),
                                     ConstrainedBox(
                                       constraints: BoxConstraints(
@@ -351,10 +351,10 @@ class _DashboardPageState extends State<DashboardPage> {
                                             ),
                                           ),
                                           const SizedBox(width: 6),
-                                          const Icon(
+                                          /* const Icon(
                                             Icons.arrow_drop_down,
                                             color: Colors.white60,
-                                          ),
+                                          ), */
                                         ],
                                       ),
                                     ),

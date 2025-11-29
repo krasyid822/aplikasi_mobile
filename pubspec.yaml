@@ -63,11 +63,15 @@ dependencies:
   path_provider: ^2.0.15
   permission_handler: ^12.0.1
 
-# Configuration for flutter_launcher_icons (generate app icons)
+# Configuration for flutter_launcher_icons
 flutter_icons:
   android: true
-  ios: true
+  ios: false
+  windows: true
   image_path: "assets/icon.png"
+  # optional: adaptive icon foreground/background for Android
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/icon.png"
 
 
 dev_dependencies:
@@ -97,7 +101,6 @@ flutter:
     - assets/audio/
     - assets/audio/huruf/
     - assets/audio/tap_game/
-    - assets/icon.png
     - assets/image/
     - assets/svgs/
     - assets/image/login/

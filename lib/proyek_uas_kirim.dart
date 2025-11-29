@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class ProyekUasKirim extends StatefulWidget {
@@ -15,16 +14,18 @@ class ProyekUasKirim extends StatefulWidget {
 }
 
 class _ProyekUasKirimState extends State<ProyekUasKirim> {
-  File? _file;
   String? _fileName;
   int? _fileSize;
   HttpServer? _server;
+  RawDatagramSocket? _discoverySocket;
   String? _hostIp;
   int? _port;
   String? _qrData;
   // qr data rendered by qr_flutter widget
   String _status = 'Menunggu pemilihan file...';
   bool _firewallOk = false;
+  bool _udpLocalOk = false;
+  bool _udpBroadcastOk = false;
   List<String> _candidateIps = [];
 
   @override
@@ -67,7 +68,6 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
       final stat = await file.stat();
 
       setState(() {
-        _file = file;
         _fileName = picked.name;
         _fileSize = stat.size;
         _status = 'File dipilih: $_fileName';
@@ -178,6 +178,37 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
         }
       });
 
+      // start UDP listener for discovery requests on a fixed port
+      try {
+        _discoverySocket = await RawDatagramSocket.bind(
+          InternetAddress.anyIPv4,
+          45678,
+        );
+        _discoverySocket?.listen((event) {
+          if (event == RawSocketEvent.read) {
+            final datagram = _discoverySocket?.receive();
+            if (datagram == null) return;
+            final msg = String.fromCharCodes(datagram.data).trim();
+            // respond to discovery requests
+            if (msg == 'MATKUL_DISCOVER' && _qrData != null) {
+              try {
+                // reply with structured JSON so clients can show file info
+                final info = {
+                  'name': _fileName ?? 'file',
+                  'url': _qrData,
+                  'size': _fileSize ?? 0,
+                };
+                final resp = jsonEncode(info).codeUnits;
+                _discoverySocket?.send(resp, datagram.address, datagram.port);
+              } catch (_) {}
+            }
+          }
+        });
+      } catch (e) {
+        // ignore discovery socket failures; discovery will simply not work
+        debugPrint('Failed to bind discovery socket: $e');
+      }
+
       // run a simple firewall check
       await _runFirewallCheck(_hostIp!, _port!);
     } catch (e) {
@@ -221,13 +252,59 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
       hostOk = false;
     }
 
+    // UDP checks (performed outside setState)
+    var udpLocal = false;
+    var udpBroadcast = false;
+
+    // 1) Local UDP loopback test
+    try {
+      final rs = await RawDatagramSocket.bind(InternetAddress.loopbackIPv4, 0);
+      final rp = rs.port;
+      final completer = Completer<void>();
+      rs.listen((event) {
+        if (event == RawSocketEvent.read) {
+          final dg = rs.receive();
+          if (dg != null) udpLocal = true;
+          completer.complete();
+        }
+      });
+      rs.send([1, 2, 3, 4], InternetAddress.loopbackIPv4, rp);
+      // wait briefly for loopback delivery
+      await Future.any([
+        completer.future,
+        Future.delayed(const Duration(milliseconds: 300)),
+      ]);
+      rs.close();
+    } catch (_) {
+      udpLocal = false;
+    }
+
+    // 2) Try sending a UDP broadcast packet (can't guarantee delivery but can detect send errors)
+    try {
+      final s = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
+      s.broadcastEnabled = true;
+      s.send([9, 9, 9], InternetAddress('255.255.255.255'), 45678);
+      // if send didn't throw, consider broadcast send allowed locally
+      udpBroadcast = true;
+      s.close();
+    } catch (_) {
+      udpBroadcast = false;
+    }
+
+    // Update state with results
     setState(() {
       _firewallOk = hostOk;
+      _udpLocalOk = udpLocal;
+      _udpBroadcastOk = udpBroadcast;
       _status = loopOk
           ? (hostOk
                 ? 'Terbuka untuk jaringan'
                 : 'Terbuka secara lokal, tetapi mungkin diblokir oleh firewall jaringan')
           : 'Server tidak merespon meskipun loopback berhasil.';
+
+      final udpSummary =
+          ' UDP local: ${_udpLocalOk ? 'OK' : 'Blocked'}, broadcast send: ${_udpBroadcastOk ? 'OK' : 'Blocked'}';
+      _status = '$_status.$udpSummary';
     });
   }
 
@@ -239,6 +316,10 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
     _port = null;
     _hostIp = null;
     _qrData = null;
+    try {
+      _discoverySocket?.close();
+    } catch (_) {}
+    _discoverySocket = null;
   }
 
   String _prettyBytes(int? bytes) {
@@ -346,12 +427,48 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
                         ),
                       ],
                     ),
+                    /* const SizedBox(height: 8),
+                    // Diagnostics dropdown
+                    ExpansionTile(
+                      title: const Text('Status Jaringan', style: TextStyle(color: Colors.white70)),
+                      collapsedIconColor: Colors.white70,
+                      iconColor: Colors.white70,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  if (_firewallOk)
+                                    const Icon(Icons.check_circle, color: Colors.green, size: 16)
+                                  else
+                                    const Icon(Icons.info_outline, color: Colors.orange, size: 16),
+                                  const SizedBox(width: 8),
+                                  Text(_status, style: const TextStyle(color: Colors.white60)),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(children: [
+                                Icon(_udpLocalOk ? Icons.check_circle : Icons.signal_cellular_connected_no_internet_0_bar,
+                                    color: _udpLocalOk ? Colors.green : Colors.orange, size: 16),
+                                const SizedBox(width: 6),
+                                const Text('UDP local', style: TextStyle(color: Colors.white60)),
+                                const SizedBox(width: 16),
+                                Icon(_udpBroadcastOk ? Icons.check_circle : Icons.wifi_off,
+                                    color: _udpBroadcastOk ? Colors.green : Colors.orange, size: 16),
+                                const SizedBox(width: 6),
+                                const Text('UDP broadcast', style: TextStyle(color: Colors.white60)),
+                              ])
+                            ],
+                          ),
+                        )
+                      ],
+                    ), */
                   ],
                   const SizedBox(height: 8),
-                  SelectableText(
-                    _qrData!,
-                    style: const TextStyle(color: Colors.white70),
-                  ),
+                  // Raw URL hidden from UI for cleaner presentation
                 ],
 
                 const SizedBox(height: 16),
@@ -372,11 +489,17 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
                         color: Colors.orange,
                         size: 16,
                       ),
+                    const SizedBox(width: 8),
+                    // moved detailed diagnostics into an ExpansionTile below
                     ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 600),
                       child: Text(
                         _status,
-                        style: const TextStyle(color: Colors.white60),
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: Colors.white60,
+                          fontSize: 10,
+                        ),
                       ),
                     ),
                   ],
@@ -388,7 +511,7 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
                   spacing: 12,
                   runSpacing: 8,
                   children: [
-                    ElevatedButton.icon(
+                    /* ElevatedButton.icon(
                       onPressed: _qrData == null
                           ? null
                           : () async {
@@ -408,8 +531,8 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF5B3EA3),
                       ),
-                    ),
-                    OutlinedButton.icon(
+                    ), */
+                    /* OutlinedButton.icon(
                       onPressed: _file == null
                           ? null
                           : () async {
@@ -432,7 +555,7 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Colors.white24),
                       ),
-                    ),
+                    ), */
                     TextButton.icon(
                       onPressed: () async {
                         await _stopServer();

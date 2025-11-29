@@ -10,6 +10,16 @@ set(BINARY_NAME "aplikasimobile")
 # versions of CMake.
 cmake_policy(VERSION 3.14...3.25)
 
+# Ensure CMP0175 is set to NEW to allow add_custom_command(TARGET ... DEPENDS)
+# used by some plugin CMakeLists (suppresses the CMP0175 dev warning).
+if(POLICY CMP0175)
+  cmake_policy(SET CMP0175 NEW)
+endif()
+
+# Suppress CMake developer warnings (equivalent to passing -Wno-dev)
+# This prevents dev-time warnings from plugin CMakeLists from flooding the build output.
+set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1 CACHE BOOL "Suppress developer warnings" FORCE)
+
 # Define build configuration option.
 get_property(IS_MULTICONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if(IS_MULTICONFIG)
@@ -40,6 +50,10 @@ add_definitions(-DUNICODE -D_UNICODE)
 function(APPLY_STANDARD_SETTINGS TARGET)
   target_compile_features(${TARGET} PUBLIC cxx_std_17)
   target_compile_options(${TARGET} PRIVATE /W4 /WX /wd"4100")
+  # Suppress specific MSVC warnings coming from third-party plugin code
+  # C4244: conversion from '__int64' to 'int', possible loss of data
+  # C4458: declaration of 'value' hides class member (from WebView2 headers)
+  target_compile_options(${TARGET} PRIVATE /wd4244 /wd4458)
   target_compile_options(${TARGET} PRIVATE /EHsc)
   target_compile_definitions(${TARGET} PRIVATE "_HAS_EXCEPTIONS=0")
   target_compile_definitions(${TARGET} PRIVATE "$<$<CONFIG:Debug>:_DEBUG>")
