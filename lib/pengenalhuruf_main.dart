@@ -76,7 +76,7 @@ class _PengenalHurufPageState extends State<PengenalHurufPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pengenalan Huruf'),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.blue.shade100,
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -86,55 +86,77 @@ class _PengenalHurufPageState extends State<PengenalHurufPage> {
             end: Alignment.bottomRight,
           ),
         ),
-        child: GridView.builder(
-          padding: const EdgeInsets.all(16),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 1,
-          ),
-          itemCount: _huruf.length,
-          itemBuilder: (context, index) {
-            return GestureDetector(
-              onTap: () => _playSound(_huruf[index]),
-              child: Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.orange.shade300, Colors.pink.shade300],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          _huruf[index],
-                          style: const TextStyle(
-                            fontSize: 48,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Icon(
-                          Icons.volume_up,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth;
+            final crossAxisCount = width > 900
+                ? 4
+                : width > 600
+                    ? 3
+                    : 2;
+            final childAspect = width > 600 ? 1.0 : 0.95;
+
+            return GridView.builder(
+              padding: const EdgeInsets.all(16),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: childAspect,
               ),
+              itemCount: _huruf.length,
+              itemBuilder: (context, index) {
+                return GestureDetector(
+                  onTap: () => _playSound(_huruf[index]),
+                  child: Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.orange.shade300, Colors.pink.shade300],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              fit: FlexFit.loose,
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.center,
+                                child: Text(
+                                  _huruf[index],
+                                  style: const TextStyle(
+                                    fontSize: 48,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            const Icon(
+                              Icons.volume_up,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
             );
           },
         ),
