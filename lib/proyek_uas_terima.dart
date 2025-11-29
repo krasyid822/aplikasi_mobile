@@ -83,6 +83,34 @@ class _ProyekUasTerimaState extends State<ProyekUasTerima> {
                       ),
                     ),
                   ),
+                  // When scanner is not running, show a centered large restart button
+                  if (!_isRunning)
+                    Center(
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          setState(() {
+                            _scanned = null;
+                            _isRunning = true;
+                          });
+                          await _controller.start();
+                        },
+                        icon: const Icon(Icons.qr_code_scanner, size: 28),
+                        label: const Text(
+                          'Mulai Ulang Pindai',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 14.0,
+                            horizontal: 20.0,
+                          ),
+                          backgroundColor: const Color(0xFF5B3EA3),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -101,22 +129,16 @@ class _ProyekUasTerimaState extends State<ProyekUasTerima> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      ElevatedButton.icon(
-                        onPressed: _isRunning
-                            ? null
-                            : () async {
-                                setState(() {
-                                  _scanned = null;
-                                  _isRunning = true;
-                                });
-                                await _controller.start();
-                              },
-                        icon: const Icon(Icons.qr_code_scanner),
-                        label: const Text('Mulai Ulang Pindai'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF5B3EA3),
+                      // show bottom restart only when scanner is running (keeps UI tidy)
+                      if (_isRunning)
+                        ElevatedButton.icon(
+                          onPressed: null,
+                          icon: const Icon(Icons.qr_code_scanner),
+                          label: const Text('Mulai Ulang Pindai'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF5B3EA3),
+                          ),
                         ),
-                      ),
                       const SizedBox(width: 12),
                       if (_scanned != null)
                         OutlinedButton.icon(

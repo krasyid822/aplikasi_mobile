@@ -19,8 +19,9 @@ class _ProyekUasUnduhState extends State<ProyekUasUnduh> {
   double _speed = 0; // bytes per second
   String _status = 'Menunggu...';
   StreamSubscription<List<int>>? _sub;
-
   bool _completed = false;
+  String? _savedPath;
+  bool _deleted = false;
   Stopwatch? _stopwatch;
 
   @override
@@ -82,9 +83,10 @@ class _ProyekUasUnduhState extends State<ProyekUasUnduh> {
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Gagal membuka folder: $e')));
+      final msg = SnackBar(content: Text('Gagal membuka folder: $e'));
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ScaffoldMessenger.of(context).showSnackBar(msg);
+      });
     }
   }
 
@@ -177,6 +179,7 @@ class _ProyekUasUnduhState extends State<ProyekUasUnduh> {
           _stopwatch?.stop();
           setState(() {
             _completed = true;
+            _savedPath = outFile.path;
             _status = 'Selesai: ${outFile.path}';
             _speed = 0;
           });
@@ -200,9 +203,14 @@ class _ProyekUasUnduhState extends State<ProyekUasUnduh> {
 
   @override
   Widget build(BuildContext context) {
-    final percent = (_totalBytes != null && _totalBytes! > 0)
-        ? (_received / _totalBytes!)
-        : null;
+    double? percent;
+    if (_totalBytes != null && _totalBytes! > 0) {
+      percent = _received / _totalBytes!;
+      if (percent > 1.0) percent = 1.0;
+    } else {
+      percent = null;
+    }
+    if (_completed) percent = 1.0;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Unduh File'),
@@ -210,75 +218,173 @@ class _ProyekUasUnduhState extends State<ProyekUasUnduh> {
         elevation: 0,
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(widget.url, style: const TextStyle(color: Colors.white70)),
-              const SizedBox(height: 12),
-              if (percent != null)
-                LinearProgressIndicator(value: percent)
-              else
-                const LinearProgressIndicator(),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    _totalBytes != null
-                        ? '${_prettyBytes(_received)} / ${_prettyBytes(_totalBytes!)}'
-                        : _prettyBytes(_received),
-                    style: const TextStyle(color: Colors.white70),
-                  ),
-                  Text(
-                    _completed
-                        ? 'Selesai'
-                        : (_speed > 0
-                              ? '${(_speed / 1024).toStringAsFixed(1)} KB/s'
-                              : '-'),
-                    style: const TextStyle(color: Colors.white70),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'ETA: ${_etaText()}',
-                    style: const TextStyle(color: Colors.white60),
-                  ),
-                  Text(_status, style: const TextStyle(color: Colors.white60)),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: _completed ? () => _openDownloadsFolder() : null,
-                    icon: const Icon(Icons.folder_open),
-                    label: const Text('Buka Folder'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF5B3EA3),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                // allow long URLs to wrap and avoid overflow
+                SelectableText(
+                  widget.url,
+                  style: const TextStyle(color: Colors.white70),
+                ),
+                const SizedBox(height: 12),
+                if (percent != null)
+                  LinearProgressIndicator(value: percent)
+                else
+                  const LinearProgressIndicator(),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Tooltip(
+                        message: _totalBytes != null
+                            ? '${_prettyBytes(_received)} / ${_prettyBytes(_totalBytes!)}'
+                            : _prettyBytes(_received),
+                        child: Text(
+                          _totalBytes != null
+                              ? '${_prettyBytes(_received)} / ${_prettyBytes(_totalBytes!)}'
+                              : _prettyBytes(_received),
+                          style: const TextStyle(color: Colors.white70),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      flex: 0,
+                      child: Tooltip(
+                        message: _completed
+                            ? 'Selesai'
+                            : (_speed > 0
+                                  ? '${(_speed / 1024).toStringAsFixed(1)} KB/s'
+                                  : '-'),
+                        child: Text(
+                          _completed
+                              ? 'Selesai'
+                              : (_speed > 0
+                                    ? '${(_speed / 1024).toStringAsFixed(1)} KB/s'
+                                    : '-'),
+                          style: const TextStyle(color: Colors.white70),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Tooltip(
+                        message: 'ETA: ${_etaText()}',
+                        child: Text(
+                          'ETA: ${_etaText()}',
+                          style: const TextStyle(color: Colors.white60),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Tooltip(
+                        message: _status,
+                        child: Text(
+                          _status,
+                          textAlign: TextAlign.right,
+                          style: const TextStyle(color: Colors.white60),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                if (_deleted)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Icon(Icons.warning, color: Colors.red),
+                        SizedBox(width: 8),
+                        Text(
+                          'File telah dihapus',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      // cancel download and leave
-                      final navigator = Navigator.of(context);
-                      await _sub?.cancel();
-                      if (!mounted) return;
-                      navigator.pop();
-                    },
-                    icon: const Icon(Icons.close),
-                    label: const Text('Batal'),
-                  ),
-                ],
-              ),
-            ],
+                // Wrap to avoid horizontal overflow on small screens
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 12,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: (_completed && !_deleted)
+                          ? () => _openDownloadsFolder()
+                          : null,
+                      icon: const Icon(Icons.folder_open),
+                      label: const Text('Buka Folder'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF5B3EA3),
+                      ),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        if (!_completed) {
+                          // cancel download and leave
+                          await _sub?.cancel();
+                          if (!mounted) return;
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            Navigator.of(context).pop();
+                          });
+                          return;
+                        }
+
+                        // Completed -> act as delete
+                        if (_savedPath != null) {
+                          try {
+                            final f = File(_savedPath!);
+                            if (await f.exists()) await f.delete();
+                            if (!mounted) return;
+                            setState(() {
+                              _deleted = true;
+                              _savedPath = null;
+                              _status = 'File dihapus';
+                            });
+                            final msg = const SnackBar(
+                              content: Text('File dihapus'),
+                            );
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              ScaffoldMessenger.of(context).showSnackBar(msg);
+                            });
+                          } catch (e) {
+                            if (!mounted) return;
+                            final msg = SnackBar(
+                              content: Text('Gagal menghapus file: $e'),
+                            );
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              ScaffoldMessenger.of(context).showSnackBar(msg);
+                            });
+                          }
+                        } else {
+                          if (!mounted) return;
+                          final msg = const SnackBar(
+                            content: Text('Tidak ada file untuk dihapus'),
+                          );
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            ScaffoldMessenger.of(context).showSnackBar(msg);
+                          });
+                        }
+                      },
+                      icon: Icon(_completed ? Icons.delete : Icons.close),
+                      label: Text(_completed ? 'Hapus' : 'Batal'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
