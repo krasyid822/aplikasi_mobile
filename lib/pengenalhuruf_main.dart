@@ -92,8 +92,8 @@ class _PengenalHurufPageState extends State<PengenalHurufPage> {
             final crossAxisCount = width > 900
                 ? 4
                 : width > 600
-                    ? 3
-                    : 2;
+                ? 3
+                : 2;
             final childAspect = width > 600 ? 1.0 : 0.95;
 
             return GridView.builder(
@@ -116,7 +116,10 @@ class _PengenalHurufPageState extends State<PengenalHurufPage> {
                     child: Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Colors.orange.shade300, Colors.pink.shade300],
+                          colors: [
+                            Colors.orange.shade300,
+                            Colors.pink.shade300,
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
