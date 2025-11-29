@@ -153,10 +153,10 @@ class _LandingPageState extends State<LandingPage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
+      /* appBar: AppBar(
         title: const Text('Landing Page - Tugas Mobile App'),
         backgroundColor: Colors.blueAccent,
-      ),
+      ), */
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -171,7 +171,7 @@ class _LandingPageState extends State<LandingPage> {
                 const SizedBox(height: 12),
                 const Center(
                   child: Text(
-                    'Landing Page - Tugas Mobile App',
+                    'Tugas Aplikasi Mobile',
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
@@ -191,7 +191,7 @@ class _LandingPageState extends State<LandingPage> {
                   controller: _searchController,
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.search),
-                    hintText: 'Cari fitur...',
+                    hintText: 'Cari tombol...',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.0),
                     ),
@@ -240,13 +240,18 @@ class _LandingPageState extends State<LandingPage> {
                           Icon(item['icon'] as IconData, color: Colors.white),
                           const SizedBox(width: 10),
                           Expanded(
-                            child: Text(
-                              item['title'] as String,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                item['title'] as String,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.clip,
                               ),
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],

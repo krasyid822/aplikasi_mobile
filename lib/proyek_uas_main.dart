@@ -110,9 +110,22 @@ class _DashboardPageState extends State<DashboardPage> {
             ).invokeMapMethod('getWifiInfo');
             if (info != null) {
               if (info['ssid'] != null) ssid = info['ssid'] as String;
-              if (info['ip'] != null &&
-                  (lan == '-' || lan == InternetAddress.loopbackIPv4.address)) {
-                lan = info['ip'] as String;
+              if (info['ip'] != null) {
+                final returnedIp = info['ip'] as String;
+                if (addrToInterface.containsKey(returnedIp)) pick = returnedIp;
+                if (lan == '-' || lan == InternetAddress.loopbackIPv4.address) {
+                  lan = returnedIp;
+                }
+              }
+              if (info['ssid'] != null) {
+                final returnedSsid = (info['ssid'] as String).toLowerCase();
+                for (final entry in addrToInterface.entries) {
+                  final name = entry.value.toLowerCase();
+                  if (name == returnedSsid || name.contains(returnedSsid)) {
+                    pick = entry.key;
+                    break;
+                  }
+                }
               }
             }
           }
@@ -122,9 +135,22 @@ class _DashboardPageState extends State<DashboardPage> {
           ).invokeMapMethod('getWifiInfo');
           if (info != null) {
             if (info['ssid'] != null) ssid = info['ssid'] as String;
-            if (info['ip'] != null &&
-                (lan == '-' || lan == InternetAddress.loopbackIPv4.address)) {
-              lan = info['ip'] as String;
+            if (info['ip'] != null) {
+              final returnedIp = info['ip'] as String;
+              if (addrToInterface.containsKey(returnedIp)) pick = returnedIp;
+              if (lan == '-' || lan == InternetAddress.loopbackIPv4.address) {
+                lan = returnedIp;
+              }
+            }
+            if (info['ssid'] != null) {
+              final returnedSsid = (info['ssid'] as String).toLowerCase();
+              for (final entry in addrToInterface.entries) {
+                final name = entry.value.toLowerCase();
+                if (name == returnedSsid || name.contains(returnedSsid)) {
+                  pick = entry.key;
+                  break;
+                }
+              }
             }
           }
 
@@ -144,16 +170,28 @@ class _DashboardPageState extends State<DashboardPage> {
           final Map? info = await MethodChannel(
             'proyek_uas/network',
           ).invokeMapMethod('getWifiInfo');
-          if (info != null && info['ssid'] != null) {
-            ssid = info['ssid'] as String;
+          if (info != null) {
+            if (info['ssid'] != null) ssid = info['ssid'] as String;
+            if (info['ip'] != null) {
+              final returnedIp = info['ip'] as String;
+              if (addrToInterface.containsKey(returnedIp)) pick = returnedIp;
+              if (lan == '-' || lan == InternetAddress.loopbackIPv4.address) {
+                lan = returnedIp;
+              }
+            }
+            if (info['ssid'] != null) {
+              final returnedSsid = (info['ssid'] as String).toLowerCase();
+              for (final entry in addrToInterface.entries) {
+                final name = entry.value.toLowerCase();
+                if (name == returnedSsid || name.contains(returnedSsid)) {
+                  pick = entry.key;
+                  break;
+                }
+              }
+            }
           } else {
             _ssidLabel = 'Interface';
             ssid = addrToInterface[pick] ?? '-';
-          }
-          if (info != null &&
-              info['ip'] != null &&
-              (lan == '-' || lan == InternetAddress.loopbackIPv4.address)) {
-            lan = info['ip'] as String;
           }
         } catch (_) {
           _ssidLabel = 'Interface';
@@ -190,7 +228,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   horizontal: 16,
                 ),
                 child: Text(
-                  'Pilih Interface',
+                  'Lihat Interface',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ),
