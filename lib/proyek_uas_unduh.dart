@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProyekUasUnduh extends StatefulWidget {
   final String url;
@@ -17,7 +19,7 @@ class _ProyekUasUnduhState extends State<ProyekUasUnduh> {
   double _speed = 0; // bytes per second
   String _status = 'Menunggu...';
   StreamSubscription<List<int>>? _sub;
-  File? _outFile;
+
   bool _completed = false;
   Stopwatch? _stopwatch;
 
@@ -50,6 +52,40 @@ class _ProyekUasUnduhState extends State<ProyekUasUnduh> {
     } catch (_) {}
     // fallback to temporary directory
     return await getTemporaryDirectory();
+  }
+
+  Future<void> _openDownloadsFolder() async {
+    try {
+      final dir = await _downloadsDirectory();
+      if (Platform.isWindows) {
+        await Process.run('explorer', [dir.path]);
+      } else if (Platform.isMacOS) {
+        await Process.run('open', [dir.path]);
+      } else if (Platform.isLinux) {
+        await Process.run('xdg-open', [dir.path]);
+      } else if (Platform.isAndroid) {
+        // Use platform channel to open the system Downloads UI to avoid FileUriExposedException
+        try {
+          await MethodChannel(
+            'proyek_uas/open_folder',
+          ).invokeMethod('openDownloadsFolderAndroid');
+        } catch (e) {
+          throw 'Gagal membuka Downloads: $e';
+        }
+      } else if (Platform.isIOS) {
+        final uri = Uri.file(dir.path);
+        if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+          throw 'Tidak dapat membuka $uri';
+        }
+      } else {
+        throw 'Platform tidak didukung';
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal membuka folder: $e')));
+    }
   }
 
   String _prettyBytes(int bytes) {
@@ -109,7 +145,6 @@ class _ProyekUasUnduhState extends State<ProyekUasUnduh> {
       final outPath = '${downloadsDir.path}${Platform.pathSeparator}$filename';
       final outFile = File(outPath);
       final sink = outFile.openWrite();
-      _outFile = outFile;
 
       _stopwatch = Stopwatch()..start();
       var lastReceived = 0;
@@ -222,15 +257,7 @@ class _ProyekUasUnduhState extends State<ProyekUasUnduh> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton.icon(
-                    onPressed: _completed
-                        ? () {
-                            // open file location - best-effort: not using external package
-                            final path = _outFile?.path ?? '-';
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('File disimpan: $path')),
-                            );
-                          }
-                        : null,
+                    onPressed: _completed ? () => _openDownloadsFolder() : null,
                     icon: const Icon(Icons.folder_open),
                     label: const Text('Buka Folder'),
                     style: ElevatedButton.styleFrom(
