@@ -4,6 +4,8 @@ import 'dart:io';
 
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -22,26 +24,21 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
   String? _hostIp;
   int? _port;
   String? _qrData;
-  // track cached copy created by native picker so we can remove it later
-  String? _cachedPath;
-  bool _isCachedCopy = false;
   // qr data rendered by qr_flutter widget
   String _status = 'Menunggu pemilihan file...';
   bool _firewallOk = false;
   bool _udpLocalOk = false;
   bool _udpBroadcastOk = false;
+  int? _cacheSizeBytes;
   List<String> _candidateIps = [];
 
   @override
   void initState() {
     super.initState();
-    // Clean up any leftover cached picks from previous runs, then start file picker
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      try {
-        const channel = MethodChannel('proyek_uas/filepicker');
-        await channel.invokeMethod('cleanupCache');
-      } catch (_) {}
-      await _pickFile();
+    // Start file picker after the first frame so dialog can show immediately
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _updateCacheSize();
+      _pickFile();
     });
   }
 
@@ -65,18 +62,12 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
           'openFileAndCopyToCache',
         );
         path = res;
-        // mark that this path is a cached copy produced by native picker
-        if (res != null) {
-          _isCachedCopy = true;
-          _cachedPath = res;
-        } else {
-          _isCachedCopy = false;
-          _cachedPath = null;
-        }
       } on PlatformException {
         path = null;
-        _isCachedCopy = false;
-        _cachedPath = null;
+      } catch (e) {
+        // MissingPluginException or other platform errors -> fall back to file_selector
+        debugPrint('Native picker unavailable or failed: $e');
+        path = null;
       }
 
       // Fallback to file_selector if native picker not available or returned null
@@ -110,11 +101,109 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
       });
 
       await _startServer(file);
+      // refresh cache info (native picker writes to cache)
+      await _updateCacheSize();
     } catch (e) {
       setState(() {
         _status = 'Gagal memilih file: $e';
       });
     }
+  }
+
+  Future<void> _updateCacheSize() async {
+    try {
+      final dir = await getTemporaryDirectory();
+      var total = 0;
+      await for (final entity in dir.list(
+        recursive: false,
+        followLinks: false,
+      )) {
+        if (entity is File) {
+          final name = entity.path.split(Platform.pathSeparator).last;
+          if (name.startsWith('picked_')) {
+            try {
+              total += await entity.length();
+            } catch (_) {}
+          }
+        }
+      }
+      if (!mounted) return;
+      setState(() {
+        _cacheSizeBytes = total;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _cacheSizeBytes = null;
+      });
+    }
+  }
+
+  Future<void> _clearCache() async {
+    try {
+      final dir = await getTemporaryDirectory();
+      var deleted = 0;
+      await for (final entity in dir.list(
+        recursive: false,
+        followLinks: false,
+      )) {
+        if (entity is File) {
+          final name = entity.path.split(Platform.pathSeparator).last;
+          if (name.startsWith('picked_')) {
+            try {
+              await entity.delete();
+              deleted++;
+            } catch (_) {}
+          }
+        }
+      }
+      await _updateCacheSize();
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Dihapus $deleted file cache')));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal membersihkan cache: $e')));
+    }
+  }
+
+  // BLE advertising control: call native MethodChannel to start/stop advertising
+  final MethodChannel _bleChannel = const MethodChannel('proyek_uas/bluetooth');
+
+  Future<void> _startBleAdvertiseIfPermitted() async {
+    if (!Platform.isAndroid) return;
+    // Request Bluetooth permissions as needed (Android 12+)
+    final perms = <Permission>[
+      Permission.bluetooth,
+      Permission.bluetoothAdvertise,
+      Permission.bluetoothConnect,
+    ];
+    for (final p in perms) {
+      if (await p.isDenied) {
+        final r = await p.request();
+        if (!r.isGranted) return;
+      }
+    }
+
+    // Build small JSON payload with minimal info
+    final payloadMap = {
+      'n': _fileName ?? 'file',
+      's': _fileSize ?? 0,
+      'u': _qrData ?? '',
+    };
+    final payload = jsonEncode(payloadMap);
+    try {
+      await _bleChannel.invokeMethod('startAdvertise', {'payload': payload});
+    } catch (_) {}
+  }
+
+  Future<void> _stopBleAdvertise() async {
+    try {
+      await _bleChannel.invokeMethod('stopAdvertise');
+    } catch (_) {}
   }
 
   Future<void> _startServer(File file) async {
@@ -347,6 +436,13 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
           ' UDP local: ${_udpLocalOk ? 'OK' : 'Blocked'}, broadcast send: ${_udpBroadcastOk ? 'OK' : 'Blocked'}';
       _status = '$_status.$udpSummary';
     });
+
+    // If UDP discovery isn't available, try BLE advertising fallback
+    if (!udpLocal && !udpBroadcast) {
+      try {
+        await _startBleAdvertiseIfPermitted();
+      } catch (_) {}
+    }
   }
 
   Future<void> _stopServer() async {
@@ -361,18 +457,10 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
       _discoverySocket?.close();
     } catch (_) {}
     _discoverySocket = null;
-
-    // remove cached copy if it was created by native picker
-    if (_isCachedCopy && _cachedPath != null) {
-      try {
-        final f = File(_cachedPath!);
-        if (await f.exists()) {
-          await f.delete();
-        }
-      } catch (_) {}
-      _cachedPath = null;
-      _isCachedCopy = false;
-    }
+    // stop BLE advertising if active
+    try {
+      await _stopBleAdvertise();
+    } catch (_) {}
   }
 
   String _prettyBytes(int? bytes) {
@@ -446,6 +534,31 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
                   style: const TextStyle(color: Colors.white60),
                 ),
                 const SizedBox(height: 12),
+
+                // Cache info and cleanup
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Cache: ${_prettyBytes(_cacheSizeBytes)}',
+                      style: const TextStyle(color: Colors.white60),
+                    ),
+                    const SizedBox(width: 12),
+                    OutlinedButton.icon(
+                      onPressed:
+                          (_cacheSizeBytes != null && _cacheSizeBytes! > 0)
+                          ? () async {
+                              await _clearCache();
+                            }
+                          : null,
+                      icon: const Icon(Icons.delete_outline),
+                      label: const Text('Bersihkan Cache'),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.white24),
+                      ),
+                    ),
+                  ],
+                ),
 
                 if (_qrData != null) ...[
                   // show candidate IPs selector to help LAN debugging

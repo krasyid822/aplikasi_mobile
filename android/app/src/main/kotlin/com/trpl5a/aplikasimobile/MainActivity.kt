@@ -11,6 +11,12 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
+import android.bluetooth.BluetoothManager
+import android.bluetooth.le.AdvertiseCallback
+import android.bluetooth.le.AdvertiseData
+import android.bluetooth.le.AdvertiseSettings
+import android.bluetooth.le.BluetoothLeAdvertiser
+import android.util.Log
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -19,6 +25,10 @@ class MainActivity : FlutterActivity() {
 
 		private var pendingFilePickerResult: MethodChannel.Result? = null
 		private val FILE_PICKER_REQUEST_CODE = 0x1234
+
+		private var advertiser: BluetoothLeAdvertiser? = null
+		private var advertiseCallback: AdvertiseCallback? = null
+
 
 	override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
 		super.configureFlutterEngine(flutterEngine)
@@ -64,21 +74,6 @@ class MainActivity : FlutterActivity() {
 						result.error("ACTIVITY_ERROR", e.message, null)
 					}
 				}
-				"cleanupCache" -> {
-					try {
-						val files = cacheDir.listFiles()
-						if (files != null) {
-							for (f in files) {
-								if (f.name.startsWith("picked_")) {
-									try { f.delete() } catch (_: Exception) {}
-								}
-							}
-						}
-						result.success(true)
-					} catch (e: Exception) {
-						result.error("CLEANUP_FAILED", e.message, null)
-					}
-				}
 				else -> result.notImplemented()
 			}
 		}
@@ -115,6 +110,84 @@ class MainActivity : FlutterActivity() {
 				}
 				else -> result.notImplemented()
 			}
+		}
+
+			// BLE advertise channel: start/stop advertising a small JSON payload
+			MethodChannel(
+				flutterEngine.dartExecutor.binaryMessenger,
+				"proyek_uas/bluetooth"
+			).setMethodCallHandler { call, result ->
+				when (call.method) {
+					"startAdvertise" -> {
+						val payload = call.argument<String>("payload") ?: ""
+						val ok = startBleAdvertise(payload)
+						result.success(ok)
+					}
+					"stopAdvertise" -> {
+						stopBleAdvertise()
+						result.success(true)
+					}
+					else -> result.notImplemented()
+				}
+			}
+	}
+
+	private fun startBleAdvertise(payload: String): Boolean {
+		try {
+			val bm = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+			val adapter = bm.adapter
+			if (adapter == null || !adapter.isEnabled) {
+				Log.w("ProyekUas", "Bluetooth adapter unavailable or disabled")
+				return false
+			}
+			val adv = adapter.bluetoothLeAdvertiser ?: run {
+				Log.w("ProyekUas", "No BluetoothLeAdvertiser available")
+				return false
+			}
+			advertiser = adv
+			val settings = AdvertiseSettings.Builder()
+				.setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY)
+				.setTxPowerLevel(AdvertiseSettings.ADVERTISE_TX_POWER_HIGH)
+				.setConnectable(false)
+				.build()
+			val md = try {
+				payload.toByteArray(Charsets.UTF_8)
+			} catch (e: Exception) {
+				ByteArray(0)
+			}
+			val dataBuilder = AdvertiseData.Builder()
+			// Put small payload into manufacturer data (use an arbitrary company id 0xFFFF)
+			try {
+				val companyId = 0xFFFF
+				dataBuilder.addManufacturerData(companyId, md)
+			} catch (e: Exception) {
+				// ignore if payload too large
+			}
+			val data = dataBuilder.build()
+			advertiseCallback = object : AdvertiseCallback() {
+				override fun onStartSuccess(settingsInEffect: AdvertiseSettings) {
+					Log.d("ProyekUas", "BLE advertise started")
+				}
+				override fun onStartFailure(errorCode: Int) {
+					Log.w("ProyekUas", "BLE advertise failed: $errorCode")
+				}
+			}
+			adv.startAdvertising(settings, data, advertiseCallback)
+			return true
+		} catch (e: Exception) {
+			Log.w("ProyekUas", "BLE advertise exception: ${e.message}")
+			return false
+		}
+	}
+
+	private fun stopBleAdvertise() {
+		try {
+			advertiser?.stopAdvertising(advertiseCallback)
+		} catch (e: Exception) {
+			// ignore
+		} finally {
+			advertiseCallback = null
+			advertiser = null
 		}
 	}
 
