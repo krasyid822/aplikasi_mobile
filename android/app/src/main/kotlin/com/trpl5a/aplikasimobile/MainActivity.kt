@@ -64,6 +64,21 @@ class MainActivity : FlutterActivity() {
 						result.error("ACTIVITY_ERROR", e.message, null)
 					}
 				}
+				"cleanupCache" -> {
+					try {
+						val files = cacheDir.listFiles()
+						if (files != null) {
+							for (f in files) {
+								if (f.name.startsWith("picked_")) {
+									try { f.delete() } catch (_: Exception) {}
+								}
+							}
+						}
+						result.success(true)
+					} catch (e: Exception) {
+						result.error("CLEANUP_FAILED", e.message, null)
+					}
+				}
 				else -> result.notImplemented()
 			}
 		}

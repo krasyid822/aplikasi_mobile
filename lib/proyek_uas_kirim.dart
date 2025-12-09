@@ -35,8 +35,14 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
   @override
   void initState() {
     super.initState();
-    // Start file picker after the first frame so dialog can show immediately
-    WidgetsBinding.instance.addPostFrameCallback((_) => _pickFile());
+    // Clean up any leftover cached picks from previous runs, then start file picker
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        const channel = MethodChannel('proyek_uas/filepicker');
+        await channel.invokeMethod('cleanupCache');
+      } catch (_) {}
+      await _pickFile();
+    });
   }
 
   @override
@@ -59,8 +65,18 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
           'openFileAndCopyToCache',
         );
         path = res;
+        // mark that this path is a cached copy produced by native picker
+        if (res != null) {
+          _isCachedCopy = true;
+          _cachedPath = res;
+        } else {
+          _isCachedCopy = false;
+          _cachedPath = null;
+        }
       } on PlatformException {
         path = null;
+        _isCachedCopy = false;
+        _cachedPath = null;
       }
 
       // Fallback to file_selector if native picker not available or returned null
@@ -345,6 +361,18 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
       _discoverySocket?.close();
     } catch (_) {}
     _discoverySocket = null;
+
+    // remove cached copy if it was created by native picker
+    if (_isCachedCopy && _cachedPath != null) {
+      try {
+        final f = File(_cachedPath!);
+        if (await f.exists()) {
+          await f.delete();
+        }
+      } catch (_) {}
+      _cachedPath = null;
+      _isCachedCopy = false;
+    }
   }
 
   String _prettyBytes(int? bytes) {
