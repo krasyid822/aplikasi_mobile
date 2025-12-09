@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_selector/file_selector.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -21,6 +22,9 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
   String? _hostIp;
   int? _port;
   String? _qrData;
+  // track cached copy created by native picker so we can remove it later
+  String? _cachedPath;
+  bool _isCachedCopy = false;
   // qr data rendered by qr_flutter widget
   String _status = 'Menunggu pemilihan file...';
   bool _firewallOk = false;
@@ -47,16 +51,31 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
     });
 
     try {
-      // file_selector: opens platform file picker and returns XFile
-      final XFile? picked = await openFile();
-      if (picked == null) {
-        setState(() {
-          _status = 'Tidak ada file dipilih.';
-        });
-        return;
+      // Try native streaming picker first (Android) which copies to cache and returns a path
+      String? path;
+      try {
+        const channel = MethodChannel('proyek_uas/filepicker');
+        final res = await channel.invokeMethod<String?>(
+          'openFileAndCopyToCache',
+        );
+        path = res;
+      } on PlatformException {
+        path = null;
       }
 
-      final path = picked.path;
+      // Fallback to file_selector if native picker not available or returned null
+      XFile? picked;
+      if (path == null) {
+        picked = await openFile();
+        if (picked == null) {
+          setState(() {
+            _status = 'Tidak ada file dipilih.';
+          });
+          return;
+        }
+        path = picked.path;
+      }
+
       if (path.isEmpty) {
         setState(() {
           _status = 'File tidak tersedia.';
@@ -68,7 +87,8 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
       final stat = await file.stat();
 
       setState(() {
-        _fileName = picked.name;
+        _fileName =
+            (picked?.name) ?? (path == null ? 'file' : path.split('/').last);
         _fileSize = stat.size;
         _status = 'File dipilih: $_fileName';
       });
@@ -149,7 +169,6 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
       serverBound.listen((HttpRequest req) async {
         try {
           if (req.method == 'GET' && req.uri.path == '/ezypizy') {
-            final bytes = await file.readAsBytes();
             req.response.headers.contentType = ContentType(
               'application',
               'octet-stream',
@@ -158,8 +177,14 @@ class _ProyekUasKirimState extends State<ProyekUasKirim> {
               'content-disposition',
               'attachment; filename="${_fileName ?? 'file'}"',
             );
-            req.response.add(bytes);
-            await req.response.close();
+            try {
+              final length = await file.length();
+              req.response.contentLength = length;
+              // Stream the file to the response to avoid loading whole file into RAM
+              await req.response.addStream(file.openRead());
+            } finally {
+              await req.response.close();
+            }
           } else if (req.method == 'GET' && req.uri.path == '/info') {
             final info = {'name': _fileName, 'size': _fileSize, 'url': _qrData};
             req.response.headers.contentType = ContentType.json;
